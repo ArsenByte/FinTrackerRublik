@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string-array name="period_options">
+        <item>За неделю</item>
+        <item>За месяц</item>
+        <item>За год</item>
+        <item>За все время</item>
+    </string-array>
+</resources> 
