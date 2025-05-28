@@ -8,35 +8,74 @@ import androidx.recyclerview.widget.RecyclerView
 import com.education.financetrackerrublik.R
 import com.education.financetrackerrublik.data.model.TransactionType
 import com.education.financetrackerrublik.data.model.TransactionWithCategory
+import com.education.financetrackerrublik.databinding.ItemDateHeaderBinding
 import com.education.financetrackerrublik.databinding.ItemTransactionBinding
+import java.text.NumberFormat
 import java.text.SimpleDateFormat
 import java.util.Locale
 
 class TransactionsAdapter(
     private val onDeleteClick: (TransactionWithCategory) -> Unit
-) : ListAdapter<TransactionWithCategory, TransactionsAdapter.ViewHolder>(TransactionDiffCallback()) {
+) : ListAdapter<TransactionListItem, RecyclerView.ViewHolder>(TransactionListItemDiffCallback()) {
 
-    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
-        val binding = ItemTransactionBinding.inflate(
-            LayoutInflater.from(parent.context),
-            parent,
-            false
-        )
-        return ViewHolder(binding)
+    private val dateFormat = SimpleDateFormat("d MMMM yyyy", Locale("ru"))
+    private val numberFormat = NumberFormat.getCurrencyInstance(Locale("ru", "RU"))
+
+    override fun getItemViewType(position: Int): Int {
+        return when (getItem(position)) {
+            is TransactionListItem.DateHeader -> VIEW_TYPE_HEADER
+            is TransactionListItem.TransactionItem -> VIEW_TYPE_TRANSACTION
+        }
     }
 
-    override fun onBindViewHolder(holder: ViewHolder, position: Int) {
-        holder.bind(getItem(position))
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder {
+        return when (viewType) {
+            VIEW_TYPE_HEADER -> {
+                val binding = ItemDateHeaderBinding.inflate(
+                    LayoutInflater.from(parent.context),
+                    parent,
+                    false
+                )
+                DateHeaderViewHolder(binding)
+            }
+            VIEW_TYPE_TRANSACTION -> {
+                val binding = ItemTransactionBinding.inflate(
+                    LayoutInflater.from(parent.context),
+                    parent,
+                    false
+                )
+                TransactionViewHolder(binding)
+            }
+            else -> throw IllegalArgumentException("Unknown view type: $viewType")
+        }
     }
 
-    inner class ViewHolder(
+    override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
+        when (val item = getItem(position)) {
+            is TransactionListItem.DateHeader -> (holder as DateHeaderViewHolder).bind(item)
+            is TransactionListItem.TransactionItem -> (holder as TransactionViewHolder).bind(item.transaction)
+        }
+    }
+
+    inner class DateHeaderViewHolder(
+        private val binding: ItemDateHeaderBinding
+    ) : RecyclerView.ViewHolder(binding.root) {
+        
+        fun bind(header: TransactionListItem.DateHeader) {
+            binding.dateText.text = dateFormat.format(header.date)
+            binding.incomeAmount.text = numberFormat.format(header.totalIncome)
+            binding.expenseAmount.text = numberFormat.format(header.totalExpense)
+        }
+    }
+
+    inner class TransactionViewHolder(
         private val binding: ItemTransactionBinding
     ) : RecyclerView.ViewHolder(binding.root) {
-        private val dateFormat = SimpleDateFormat("dd.MM.yyyy", Locale.getDefault())
-
+        
         init {
             binding.root.setOnLongClickListener {
-                onDeleteClick(getItem(adapterPosition))
+                val transaction = (getItem(adapterPosition) as? TransactionListItem.TransactionItem)?.transaction
+                transaction?.let { onDeleteClick(it) }
                 true
             }
         }
@@ -48,9 +87,9 @@ class TransactionsAdapter(
                 date.text = dateFormat.format(transactionWithCategory.transaction.date)
                 
                 val amountText = if (transactionWithCategory.transaction.type == TransactionType.EXPENSE) {
-                    "- ${transactionWithCategory.transaction.amount} ₽"
+                    "- ${numberFormat.format(transactionWithCategory.transaction.amount)}"
                 } else {
-                    "+ ${transactionWithCategory.transaction.amount} ₽"
+                    "+ ${numberFormat.format(transactionWithCategory.transaction.amount)}"
                 }
                 amount.text = amountText
                 amount.setTextColor(
@@ -69,19 +108,28 @@ class TransactionsAdapter(
                 } else {
                     note.visibility = android.view.View.GONE
                 }
-
-                deleteButton.visibility = android.view.View.GONE
             }
         }
     }
+
+    companion object {
+        private const val VIEW_TYPE_HEADER = 0
+        private const val VIEW_TYPE_TRANSACTION = 1
+    }
 }
 
-private class TransactionDiffCallback : DiffUtil.ItemCallback<TransactionWithCategory>() {
-    override fun areItemsTheSame(oldItem: TransactionWithCategory, newItem: TransactionWithCategory): Boolean {
-        return oldItem.transaction.id == newItem.transaction.id
+private class TransactionListItemDiffCallback : DiffUtil.ItemCallback<TransactionListItem>() {
+    override fun areItemsTheSame(oldItem: TransactionListItem, newItem: TransactionListItem): Boolean {
+        return when {
+            oldItem is TransactionListItem.DateHeader && newItem is TransactionListItem.DateHeader ->
+                oldItem.date.time == newItem.date.time
+            oldItem is TransactionListItem.TransactionItem && newItem is TransactionListItem.TransactionItem ->
+                oldItem.transaction.transaction.id == newItem.transaction.transaction.id
+            else -> false
+        }
     }
 
-    override fun areContentsTheSame(oldItem: TransactionWithCategory, newItem: TransactionWithCategory): Boolean {
+    override fun areContentsTheSame(oldItem: TransactionListItem, newItem: TransactionListItem): Boolean {
         return oldItem == newItem
     }
 }

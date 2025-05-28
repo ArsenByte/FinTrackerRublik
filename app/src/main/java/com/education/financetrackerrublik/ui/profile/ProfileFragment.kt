@@ -34,6 +34,11 @@ class ProfileFragment : Fragment() {
         observeViewModel()
     }
 
+    override fun onResume() {
+        super.onResume()
+        viewModel.loadTotalAmounts()  // Обновляем данные при возвращении на экран
+    }
+
     private fun setupViews() {
         // Настройка переключателя темной темы
         binding.darkThemeSwitch.apply {

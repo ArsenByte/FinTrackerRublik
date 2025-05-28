@@ -29,7 +29,7 @@ class ProfileViewModel(application: Application) : AndroidViewModel(application)
         loadTotalAmounts()
     }
 
-    private fun loadTotalAmounts() {
+    fun loadTotalAmounts() {
         viewModelScope.launch(Dispatchers.IO) {
             val startDate = Calendar.getInstance().apply {
                 set(1970, Calendar.JANUARY, 1, 0, 0, 0)

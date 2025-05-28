@@ -47,6 +47,10 @@ class AddTransactionFragment : Fragment() {
     }
 
     private fun setupViews() {
+        binding.toolbar.setNavigationOnClickListener {
+            findNavController().navigateUp()
+        }
+
         binding.typeTabs.addOnTabSelectedListener(object : TabLayout.OnTabSelectedListener {
             override fun onTabSelected(tab: TabLayout.Tab?) {
                 val type = if (tab?.position == 0) TransactionType.EXPENSE else TransactionType.INCOME

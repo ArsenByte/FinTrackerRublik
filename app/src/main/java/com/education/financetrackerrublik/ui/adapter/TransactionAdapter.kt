@@ -34,6 +34,13 @@ class TransactionAdapter(
 
         private val dateFormat = SimpleDateFormat("dd.MM.yyyy HH:mm", Locale("ru"))
 
+        init {
+            binding.root.setOnLongClickListener {
+                onDeleteClick(getItem(adapterPosition))
+                true
+            }
+        }
+
         fun bind(transactionWithCategory: TransactionWithCategory) {
             binding.apply {
                 val transaction = transactionWithCategory.transaction
@@ -51,11 +58,6 @@ class TransactionAdapter(
                     android.graphics.Color.GREEN
                 }
                 amount.setTextColor(textColor)
-
-                // Set delete click listener
-                deleteButton.setOnClickListener {
-                    onDeleteClick(transactionWithCategory)
-                }
             }
         }
     }

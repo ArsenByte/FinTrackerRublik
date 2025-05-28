@@ -10,6 +10,7 @@ import com.education.financetrackerrublik.data.model.TransactionType
 import com.education.financetrackerrublik.data.model.TransactionWithCategory
 import com.education.financetrackerrublik.data.model.Transaction
 import com.education.financetrackerrublik.data.repository.TransactionRepository
+import com.education.financetrackerrublik.ui.adapter.TransactionListItem
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.stateIn
@@ -23,8 +24,8 @@ class HomeViewModel(application: Application) : AndroidViewModel(application) {
     private val categoryDao = database.categoryDao()
     private val transactionRepository = TransactionRepository(database.transactionDao())
 
-    private val _todayTransactions = MutableLiveData<List<TransactionWithCategory>>()
-    val todayTransactions: LiveData<List<TransactionWithCategory>> = _todayTransactions
+    private val _todayTransactions = MutableLiveData<List<TransactionListItem>>()
+    val todayTransactions: LiveData<List<TransactionListItem>> = _todayTransactions
 
     private val _monthlyIncome = MutableLiveData<Double>()
     val monthlyIncome: LiveData<Double> = _monthlyIncome
@@ -79,7 +80,44 @@ class HomeViewModel(application: Application) : AndroidViewModel(application) {
             val category = categoryDao.getCategoryById(transaction.categoryId)
             category?.let { TransactionWithCategory(transaction, it) }
         }.filterNotNull()
-        _todayTransactions.postValue(transactionsWithCategory)
+
+        // Группируем транзакции по дате
+        val groupedTransactions = transactionsWithCategory.groupBy { transaction ->
+            Calendar.getInstance().apply {
+                time = transaction.transaction.date
+                set(Calendar.HOUR_OF_DAY, 0)
+                set(Calendar.MINUTE, 0)
+                set(Calendar.SECOND, 0)
+                set(Calendar.MILLISECOND, 0)
+            }.time
+        }
+
+        // Создаем список элементов с заголовками и транзакциями
+        val items = mutableListOf<TransactionListItem>()
+        
+        groupedTransactions.entries
+            .sortedByDescending { it.key }
+            .forEach { (date, transactionsForDate) ->
+                // Считаем общие суммы для дня
+                val totalIncome = transactionsForDate
+                    .filter { it.transaction.type == TransactionType.INCOME }
+                    .sumOf { it.transaction.amount }
+                val totalExpense = transactionsForDate
+                    .filter { it.transaction.type == TransactionType.EXPENSE }
+                    .sumOf { it.transaction.amount }
+
+                // Добавляем заголовок дня
+                items.add(TransactionListItem.DateHeader(date, totalIncome, totalExpense))
+
+                // Добавляем транзакции за день
+                transactionsForDate
+                    .sortedByDescending { it.transaction.date }
+                    .forEach { transaction ->
+                        items.add(TransactionListItem.TransactionItem(transaction))
+                    }
+            }
+
+        _todayTransactions.postValue(items)
     }
 
     private suspend fun loadMonthlyStatistics(startOfMonth: Date, endOfMonth: Date) {
@@ -98,10 +136,10 @@ class HomeViewModel(application: Application) : AndroidViewModel(application) {
         _monthlyExpense.postValue(expense)
     }
 
-    fun deleteTransaction(transactionWithCategory: TransactionWithCategory) {
+    fun deleteTransaction(transaction: TransactionWithCategory) {
         viewModelScope.launch(Dispatchers.IO) {
-            transactionDao.deleteTransaction(transactionWithCategory.transaction)
-            loadData() // Перезагружаем данные после удаления
+            transactionDao.deleteTransaction(transaction.transaction)
+            loadData()
         }
     }
 } 

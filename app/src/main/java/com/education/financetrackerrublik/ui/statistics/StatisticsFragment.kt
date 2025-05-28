@@ -14,6 +14,7 @@ import com.github.mikephil.charting.data.PieData
 import com.github.mikephil.charting.data.PieDataSet
 import com.github.mikephil.charting.data.PieEntry
 import com.google.android.material.tabs.TabLayout
+import androidx.core.graphics.toColorInt
 
 class StatisticsFragment : Fragment() {
     private var _binding: FragmentStatisticsBinding? = null
@@ -56,7 +57,13 @@ class StatisticsFragment : Fragment() {
             override fun onTabUnselected(tab: TabLayout.Tab?) {}
             override fun onTabReselected(tab: TabLayout.Tab?) {}
         })
-
+        binding.tabLayout.apply {
+            setTabTextColors(
+                "#CCCCCC".toColorInt(),  // Цвет невыбранного таба
+                android.graphics.Color.WHITE  // Цвет выбранного таба
+            )
+            setSelectedTabIndicatorColor(android.graphics.Color.WHITE)
+        }
         binding.periodSpinner.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
             override fun onItemSelected(parent: AdapterView<*>?, view: View?, position: Int, id: Long) {
                 currentPeriod = position
@@ -76,18 +83,30 @@ class StatisticsFragment : Fragment() {
             holeRadius = 58f
             transparentCircleRadius = 61f
             setDrawCenterText(true)
-            setDrawEntryLabels(false)
-            legend.isEnabled = true
-            legend.textSize = 12f
+            setDrawEntryLabels(true)
+            setEntryLabelColor(android.graphics.Color.WHITE)
+            setEntryLabelTextSize(12f)
+            legend.isEnabled = false
         }
     }
 
     private fun observeViewModel() {
         viewModel.statistics.observe(viewLifecycleOwner) { statistics ->
-            adapter.submitList(statistics)
+            val nonZeroStats = statistics.filter { it.amount > 0 }
+            adapter.submitList(nonZeroStats)
 
-            if (statistics.isNotEmpty()) {
-                updatePieChart(statistics)
+            if (nonZeroStats.isNotEmpty()) {
+                binding.pieChart.visibility = View.VISIBLE
+                binding.emptyStateText.visibility = View.GONE
+                updatePieChart(nonZeroStats)
+            } else {
+                binding.pieChart.visibility = View.GONE
+                binding.emptyStateText.visibility = View.VISIBLE
+                binding.emptyStateText.text = if (currentType == TransactionType.EXPENSE) {
+                    "Нет расходов за выбранный период"
+                } else {
+                    "Нет доходов за выбранный период"
+                }
             }
         }
     }
@@ -101,9 +120,13 @@ class StatisticsFragment : Fragment() {
 
         val dataSet = PieDataSet(entries, "").apply {
             this.colors = colors
-            valueTextSize = 12f
+            valueTextSize = 14f
             valueTextColor = android.graphics.Color.WHITE
             valueFormatter = PercentFormatter()
+            setDrawValues(true)
+            valueLinePart1Length = 0f  // Убираем линии
+            valueLinePart2Length = 0f
+            yValuePosition = PieDataSet.ValuePosition.INSIDE_SLICE  // Проценты внутри секторов
         }
 
         binding.pieChart.data = PieData(dataSet)
