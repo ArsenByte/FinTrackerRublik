@@ -12,6 +12,7 @@ import com.education.financetrackerrublik.R
 import com.education.financetrackerrublik.data.model.TransactionType
 import com.education.financetrackerrublik.databinding.FragmentTransactionsBinding
 import com.education.financetrackerrublik.ui.adapter.TransactionsAdapter
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Date
@@ -22,7 +23,6 @@ class TransactionsFragment : Fragment() {
     private val binding get() = _binding!!
 
     private val viewModel: TransactionsViewModel by viewModels()
-    private val transactionsAdapter = TransactionsAdapter()
     private val dateFormat = SimpleDateFormat("dd.MM.yyyy", Locale("ru"))
 
     override fun onCreateView(
@@ -46,7 +46,17 @@ class TransactionsFragment : Fragment() {
     }
 
     private fun setupRecyclerView() {
-        binding.transactionsList.adapter = transactionsAdapter
+        val adapter = TransactionsAdapter { transactionWithCategory ->
+            MaterialAlertDialogBuilder(requireContext())
+                .setTitle("Удаление транзакции")
+                .setMessage("Вы действительно хотите удалить эту транзакцию?")
+                .setPositiveButton("Удалить") { _, _ ->
+                    viewModel.deleteTransaction(transactionWithCategory)
+                }
+                .setNegativeButton("Отмена", null)
+                .show()
+        }
+        binding.transactionsList.adapter = adapter
     }
 
     private fun setupFilterButton() {
@@ -130,7 +140,7 @@ class TransactionsFragment : Fragment() {
 
     private fun observeViewModel() {
         viewModel.transactions.observe(viewLifecycleOwner) { transactions ->
-            transactionsAdapter.submitList(transactions)
+            (binding.transactionsList.adapter as TransactionsAdapter).submitList(transactions)
             binding.emptyView.visibility = if (transactions.isEmpty()) View.VISIBLE else View.GONE
         }
     }

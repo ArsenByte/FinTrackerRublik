@@ -12,7 +12,9 @@ import com.education.financetrackerrublik.databinding.ItemTransactionBinding
 import java.text.SimpleDateFormat
 import java.util.Locale
 
-class TransactionsAdapter : ListAdapter<TransactionWithCategory, TransactionsAdapter.ViewHolder>(TransactionDiffCallback()) {
+class TransactionsAdapter(
+    private val onDeleteClick: (TransactionWithCategory) -> Unit
+) : ListAdapter<TransactionWithCategory, TransactionsAdapter.ViewHolder>(TransactionDiffCallback()) {
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
         val binding = ItemTransactionBinding.inflate(
@@ -27,7 +29,7 @@ class TransactionsAdapter : ListAdapter<TransactionWithCategory, TransactionsAda
         holder.bind(getItem(position))
     }
 
-    class ViewHolder(
+    inner class ViewHolder(
         private val binding: ItemTransactionBinding
     ) : RecyclerView.ViewHolder(binding.root) {
         private val dateFormat = SimpleDateFormat("dd.MM.yyyy", Locale.getDefault())
@@ -59,6 +61,10 @@ class TransactionsAdapter : ListAdapter<TransactionWithCategory, TransactionsAda
                     note.visibility = android.view.View.VISIBLE
                 } else {
                     note.visibility = android.view.View.GONE
+                }
+
+                deleteButton.setOnClickListener {
+                    onDeleteClick(transactionWithCategory)
                 }
             }
         }

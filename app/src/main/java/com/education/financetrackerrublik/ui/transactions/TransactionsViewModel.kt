@@ -59,4 +59,11 @@ class TransactionsViewModel(application: Application) : AndroidViewModel(applica
         selectedType = type
         loadTransactions()
     }
+
+    fun deleteTransaction(transactionWithCategory: TransactionWithCategory) {
+        viewModelScope.launch(Dispatchers.IO) {
+            transactionDao.deleteTransaction(transactionWithCategory.transaction)
+            loadTransactions()
+        }
+    }
 } 
