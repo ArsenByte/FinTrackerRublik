@@ -10,7 +10,8 @@ import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.education.financetrackerrublik.R
 import com.education.financetrackerrublik.databinding.FragmentHomeBinding
-import com.education.financetrackerrublik.ui.adapter.TransactionAdapter
+import com.education.financetrackerrublik.ui.adapter.TransactionsAdapter
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import java.text.NumberFormat
 import java.util.Locale
 
@@ -19,7 +20,7 @@ class HomeFragment : Fragment() {
     private val binding get() = _binding!!
 
     private lateinit var viewModel: HomeViewModel
-    private lateinit var transactionAdapter: TransactionAdapter
+    private lateinit var transactionAdapter: TransactionsAdapter
     private val numberFormat = NumberFormat.getCurrencyInstance(Locale("ru", "RU"))
 
     override fun onCreateView(
@@ -42,8 +43,15 @@ class HomeFragment : Fragment() {
     }
 
     private fun setupRecyclerView() {
-        transactionAdapter = TransactionAdapter { transactionWithCategory ->
-            viewModel.deleteTransaction(transactionWithCategory)
+        transactionAdapter = TransactionsAdapter { transactionWithCategory ->
+            MaterialAlertDialogBuilder(requireContext())
+                .setTitle("Удаление транзакции")
+                .setMessage("Вы действительно хотите удалить эту транзакцию?")
+                .setPositiveButton("Удалить") { _, _ ->
+                    viewModel.deleteTransaction(transactionWithCategory)
+                }
+                .setNegativeButton("Отмена", null)
+                .show()
         }
 
         binding.transactionsList.apply {
@@ -61,6 +69,7 @@ class HomeFragment : Fragment() {
     private fun observeViewModel() {
         viewModel.todayTransactions.observe(viewLifecycleOwner) { transactions ->
             transactionAdapter.submitList(transactions)
+            binding.emptyView.visibility = if (transactions.isEmpty()) View.VISIBLE else View.GONE
         }
 
         viewModel.monthlyIncome.observe(viewLifecycleOwner) { income ->

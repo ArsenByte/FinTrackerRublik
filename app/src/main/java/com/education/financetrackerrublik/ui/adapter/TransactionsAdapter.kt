@@ -34,6 +34,13 @@ class TransactionsAdapter(
     ) : RecyclerView.ViewHolder(binding.root) {
         private val dateFormat = SimpleDateFormat("dd.MM.yyyy", Locale.getDefault())
 
+        init {
+            binding.root.setOnLongClickListener {
+                onDeleteClick(getItem(adapterPosition))
+                true
+            }
+        }
+
         fun bind(transactionWithCategory: TransactionWithCategory) {
             binding.apply {
                 categoryIcon.setImageResource(transactionWithCategory.category.iconResId)
@@ -63,9 +70,7 @@ class TransactionsAdapter(
                     note.visibility = android.view.View.GONE
                 }
 
-                deleteButton.setOnClickListener {
-                    onDeleteClick(transactionWithCategory)
-                }
+                deleteButton.visibility = android.view.View.GONE
             }
         }
     }
