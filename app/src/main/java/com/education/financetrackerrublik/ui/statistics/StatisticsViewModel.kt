@@ -11,6 +11,7 @@ import com.education.financetrackerrublik.data.model.Category
 import com.education.financetrackerrublik.data.model.Transaction
 import com.education.financetrackerrublik.data.model.TransactionType
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import java.util.Calendar
 import java.util.Date
@@ -43,7 +44,7 @@ class StatisticsViewModel(application: Application) : AndroidViewModel(applicati
             val transactions = if (startDate != null && endDate != null) {
                 transactionDao.getTransactionsByDateRange(startDate, endDate)
             } else {
-                transactionDao.getAllTransactions()
+                transactionDao.getAllTransactions().first()
             }
 
             val filteredTransactions = transactions.filter { it.type == type }

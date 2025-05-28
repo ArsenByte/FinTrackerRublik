@@ -9,6 +9,7 @@ import com.education.financetrackerrublik.data.AppDatabase
 import com.education.financetrackerrublik.data.model.TransactionType
 import com.education.financetrackerrublik.data.model.TransactionWithCategory
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import java.util.Date
 
@@ -33,11 +34,11 @@ class TransactionsViewModel(application: Application) : AndroidViewModel(applica
             val baseTransactions = if (startDate != null && endDate != null) {
                 transactionDao.getTransactionsByDateRange(startDate!!, endDate!!)
             } else {
-                transactionDao.getAllTransactions()
+                transactionDao.getAllTransactions().first()
             }
 
             val filteredTransactions = baseTransactions.filter { transaction ->
-                selectedType?.let { it == transaction.type } ?: true
+                selectedType?.let { type -> type == transaction.type } ?: true
             }
 
             val transactionsWithCategory = filteredTransactions.mapNotNull { transaction ->
