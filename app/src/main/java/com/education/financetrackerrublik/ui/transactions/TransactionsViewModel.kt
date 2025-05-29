@@ -24,7 +24,7 @@ class TransactionsViewModel(application: Application) : AndroidViewModel(applica
 
     private var currentType: TransactionType? = null
     private var startDate: Date = Calendar.getInstance().apply {
-        add(Calendar.MONTH, -1)
+        add(Calendar.YEAR, -10)
         set(Calendar.HOUR_OF_DAY, 0)
         set(Calendar.MINUTE, 0)
         set(Calendar.SECOND, 0)

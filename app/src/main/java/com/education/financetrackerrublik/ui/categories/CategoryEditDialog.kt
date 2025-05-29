@@ -5,7 +5,6 @@ import android.view.LayoutInflater
 import com.education.financetrackerrublik.R
 import com.education.financetrackerrublik.data.model.Category
 import com.education.financetrackerrublik.databinding.DialogEditCategoryBinding
-import com.google.android.material.chip.Chip
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 
 class CategoryEditDialog(
@@ -17,15 +16,24 @@ class CategoryEditDialog(
     private var selectedIconResId = category?.iconResId ?: R.drawable.ic_other
 
     private val availableIcons = listOf(
-        R.drawable.ic_food to "Еда",
-        R.drawable.ic_transport to "Транспорт",
-        R.drawable.ic_shopping to "Покупки",
-        R.drawable.ic_home to "Дом",
-        R.drawable.ic_entertainment to "Развлечения",
-        R.drawable.ic_health to "Здоровье",
-        R.drawable.ic_education to "Образование",
-        R.drawable.ic_work to "Работа",
-        R.drawable.ic_other to "Другое"
+        IconGridAdapter.IconItem(R.drawable.ic_food, "Еда"),
+        IconGridAdapter.IconItem(R.drawable.ic_transport, "Транспорт"),
+        IconGridAdapter.IconItem(R.drawable.ic_shopping, "Покупки"),
+        IconGridAdapter.IconItem(R.drawable.ic_home, "Дом"),
+        IconGridAdapter.IconItem(R.drawable.ic_entertainment, "Развлечения"),
+        IconGridAdapter.IconItem(R.drawable.ic_health, "Здоровье"),
+        IconGridAdapter.IconItem(R.drawable.ic_education, "Образование"),
+        IconGridAdapter.IconItem(R.drawable.ic_work, "Работа"),
+        IconGridAdapter.IconItem(R.drawable.ic_bills, "Счета"),
+        IconGridAdapter.IconItem(R.drawable.ic_gifts, "Подарки"),
+        IconGridAdapter.IconItem(R.drawable.ic_clothes, "Одежда"),
+        IconGridAdapter.IconItem(R.drawable.ic_cafe, "Кафе"),
+        IconGridAdapter.IconItem(R.drawable.ic_beauty, "Красота"),
+        IconGridAdapter.IconItem(R.drawable.ic_sports, "Спорт"),
+        IconGridAdapter.IconItem(R.drawable.ic_pets, "Питомцы"),
+        IconGridAdapter.IconItem(R.drawable.ic_investment, "Инвестиции"),
+        IconGridAdapter.IconItem(R.drawable.ic_bonus, "Бонусы"),
+        IconGridAdapter.IconItem(R.drawable.ic_other, "Другое")
     )
 
     init {
@@ -38,20 +46,11 @@ class CategoryEditDialog(
             binding.nameEdit.setText(it.name)
         }
 
-        // Создаем чипы для каждой иконки
-        availableIcons.forEach { (iconResId, description) ->
-            val chip = Chip(context).apply {
-                setChipIconResource(iconResId)
-                isCheckable = true
-                isChecked = iconResId == selectedIconResId
-                setOnCheckedChangeListener { _, isChecked ->
-                    if (isChecked) {
-                        selectedIconResId = iconResId
-                    }
-                }
-            }
-            binding.iconGroup.addView(chip)
+        // Настраиваем сетку иконок
+        val adapter = IconGridAdapter(availableIcons) { iconResId ->
+            selectedIconResId = iconResId
         }
+        binding.iconGrid.adapter = adapter
     }
 
     fun show() {

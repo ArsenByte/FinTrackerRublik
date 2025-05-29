@@ -8,12 +8,8 @@ import androidx.lifecycle.viewModelScope
 import com.education.financetrackerrublik.data.AppDatabase
 import com.education.financetrackerrublik.data.model.TransactionType
 import com.education.financetrackerrublik.data.model.TransactionWithCategory
-import com.education.financetrackerrublik.data.model.Transaction
-import com.education.financetrackerrublik.data.repository.TransactionRepository
 import com.education.financetrackerrublik.ui.adapter.TransactionListItem
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.flow.SharingStarted
-import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import java.util.Calendar
 import java.util.Date
@@ -22,7 +18,6 @@ class HomeViewModel(application: Application) : AndroidViewModel(application) {
     private val database = AppDatabase.getDatabase(application)
     private val transactionDao = database.transactionDao()
     private val categoryDao = database.categoryDao()
-    private val transactionRepository = TransactionRepository(database.transactionDao())
 
     private val _todayTransactions = MutableLiveData<List<TransactionListItem>>()
     val todayTransactions: LiveData<List<TransactionListItem>> = _todayTransactions
@@ -32,13 +27,6 @@ class HomeViewModel(application: Application) : AndroidViewModel(application) {
 
     private val _monthlyExpense = MutableLiveData<Double>()
     val monthlyExpense: LiveData<Double> = _monthlyExpense
-
-    val transactions = transactionRepository.getAllTransactions()
-        .stateIn(
-            scope = viewModelScope,
-            started = SharingStarted.WhileSubscribed(5000),
-            initialValue = emptyList()
-        )
 
     init {
         loadData()

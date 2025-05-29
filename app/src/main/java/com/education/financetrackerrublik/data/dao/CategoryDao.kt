@@ -6,9 +6,6 @@ import com.education.financetrackerrublik.data.model.TransactionType
 
 @Dao
 interface CategoryDao {
-    @Query("SELECT * FROM categories ORDER BY name ASC")
-    fun getAllCategories(): List<Category>
-
     @Query("SELECT * FROM categories WHERE type = :type ORDER BY name ASC")
     fun getCategoriesByType(type: TransactionType): List<Category>
 
@@ -23,7 +20,4 @@ interface CategoryDao {
 
     @Delete
     fun deleteCategory(category: Category)
-
-    @Query("SELECT EXISTS(SELECT 1 FROM transactions WHERE categoryId = :categoryId)")
-    fun isCategoryUsed(categoryId: Long): Boolean
 } 

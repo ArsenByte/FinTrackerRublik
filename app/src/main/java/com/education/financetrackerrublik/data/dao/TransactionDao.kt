@@ -20,17 +20,11 @@ interface TransactionDao {
     @Query("SELECT SUM(amount) FROM transactions WHERE type = :type AND date >= :startDate AND date <= :endDate")
     fun getTotalByType(type: TransactionType, startDate: Date, endDate: Date): Double?
 
-    @Query("SELECT * FROM transactions WHERE date >= :startDate AND date <= :endDate ORDER BY date DESC")
-    fun getTransactionsByPeriod(startDate: Date, endDate: Date): List<Transaction>
-
     @Query("SELECT COUNT(*) FROM transactions WHERE categoryId = :categoryId")
     suspend fun getTransactionsCountByCategory(categoryId: Long): Int
 
     @Insert
     suspend fun insertTransaction(transaction: Transaction): Long
-
-    @Update
-    suspend fun updateTransaction(transaction: Transaction)
 
     @Delete
     suspend fun deleteTransaction(transaction: Transaction)

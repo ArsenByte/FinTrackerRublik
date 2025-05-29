@@ -73,7 +73,7 @@ class StatisticsViewModel(application: Application) : AndroidViewModel(applicati
             0 -> startDate.add(Calendar.DAY_OF_YEAR, -7)  // Неделя
             1 -> startDate.add(Calendar.MONTH, -1)        // Месяц
             2 -> startDate.add(Calendar.YEAR, -1)         // Год
-            3 -> return Pair(null, null)                  // Все время
+            3 -> startDate.add(Calendar.YEAR, -10)        // За последние 10 лет
         }
 
         return Pair(startDate.time, endDate.time)
