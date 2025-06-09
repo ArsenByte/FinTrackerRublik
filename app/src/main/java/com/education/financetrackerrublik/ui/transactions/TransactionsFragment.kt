@@ -1,6 +1,5 @@
 package com.education.financetrackerrublik.ui.transactions
 
-import android.app.DatePickerDialog
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -14,10 +13,12 @@ import com.education.financetrackerrublik.databinding.FragmentTransactionsBindin
 import com.education.financetrackerrublik.ui.adapter.TransactionsAdapter
 import com.education.financetrackerrublik.ui.adapter.TransactionListItem
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
+import com.google.android.material.datepicker.MaterialDatePicker
 import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Date
 import java.util.Locale
+import java.util.TimeZone
 
 class TransactionsFragment : Fragment() {
     private var _binding: FragmentTransactionsBinding? = null
@@ -98,37 +99,31 @@ class TransactionsFragment : Fragment() {
     }
 
     private fun showDateRangePicker() {
-        val calendar = Calendar.getInstance()
-        
-        DatePickerDialog(
-            requireContext(),
-            { _, year, month, day ->
-                val startDate = Calendar.getInstance().apply {
-                    set(year, month, day, 0, 0, 0)
-                    set(Calendar.MILLISECOND, 0)
-                }
-                
-                DatePickerDialog(
-                    requireContext(),
-                    { _, endYear, endMonth, endDay ->
-                        val endDate = Calendar.getInstance().apply {
-                            set(endYear, endMonth, endDay, 23, 59, 59)
-                            set(Calendar.MILLISECOND, 999)
-                        }
-                        
-                        if (endDate.time.after(startDate.time)) {
-                            updateDateRange(startDate.time, endDate.time)
-                        }
-                    },
-                    calendar.get(Calendar.YEAR),
-                    calendar.get(Calendar.MONTH),
-                    calendar.get(Calendar.DAY_OF_MONTH)
-                ).show()
-            },
-            calendar.get(Calendar.YEAR),
-            calendar.get(Calendar.MONTH),
-            calendar.get(Calendar.DAY_OF_MONTH)
-        ).show()
+        val dateRangePicker = MaterialDatePicker.Builder.dateRangePicker()
+            .setTitleText("Выберите период")
+            .build()
+
+        dateRangePicker.addOnPositiveButtonClickListener { selection ->
+            val startDate = Calendar.getInstance(TimeZone.getTimeZone("UTC")).apply {
+                timeInMillis = selection.first
+                set(Calendar.HOUR_OF_DAY, 0)
+                set(Calendar.MINUTE, 0)
+                set(Calendar.SECOND, 0)
+                set(Calendar.MILLISECOND, 0)
+            }
+
+            val endDate = Calendar.getInstance(TimeZone.getTimeZone("UTC")).apply {
+                timeInMillis = selection.second
+                set(Calendar.HOUR_OF_DAY, 23)
+                set(Calendar.MINUTE, 59)
+                set(Calendar.SECOND, 59)
+                set(Calendar.MILLISECOND, 999)
+            }
+
+            updateDateRange(startDate.time, endDate.time)
+        }
+
+        dateRangePicker.show(parentFragmentManager, "date_range_picker")
     }
 
     private fun updateDateRange(startDate: Date, endDate: Date) {

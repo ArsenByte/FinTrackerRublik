@@ -11,7 +11,6 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import java.text.NumberFormat
 import java.util.Calendar
-import java.util.Date
 import java.util.Locale
 
 class ProfileViewModel(application: Application) : AndroidViewModel(application) {
@@ -46,12 +45,6 @@ class ProfileViewModel(application: Application) : AndroidViewModel(application)
 
             _totalIncome.postValue(numberFormat.format(income))
             _totalExpense.postValue(numberFormat.format(expense))
-        }
-    }
-
-    fun exportData() {
-        viewModelScope.launch(Dispatchers.IO) {
-            // TODO: Реализовать экспорт данных в CSV
         }
     }
 } 

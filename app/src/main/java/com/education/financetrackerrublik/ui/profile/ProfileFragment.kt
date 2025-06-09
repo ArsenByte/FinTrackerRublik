@@ -4,7 +4,6 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.Toast
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
@@ -36,11 +35,10 @@ class ProfileFragment : Fragment() {
 
     override fun onResume() {
         super.onResume()
-        viewModel.loadTotalAmounts()  // Обновляем данные при возвращении на экран
+        viewModel.loadTotalAmounts()
     }
 
     private fun setupViews() {
-        // Настройка переключателя темной темы
         binding.darkThemeSwitch.apply {
             isChecked = AppCompatDelegate.getDefaultNightMode() == AppCompatDelegate.MODE_NIGHT_YES
             setOnCheckedChangeListener { _, isChecked ->
@@ -51,19 +49,8 @@ class ProfileFragment : Fragment() {
             }
         }
 
-        // Управление категориями
         binding.manageCategories.setOnClickListener {
             findNavController().navigate(R.id.action_profile_to_categories)
-        }
-
-        // Экспорт данных
-        binding.exportData.setOnClickListener {
-            viewModel.exportData()
-            Toast.makeText(
-                requireContext(),
-                "Экспорт данных будет реализован позже",
-                Toast.LENGTH_SHORT
-            ).show()
         }
     }
 

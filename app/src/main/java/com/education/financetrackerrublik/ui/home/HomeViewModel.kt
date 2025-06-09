@@ -69,7 +69,6 @@ class HomeViewModel(application: Application) : AndroidViewModel(application) {
             category?.let { TransactionWithCategory(transaction, it) }
         }.filterNotNull()
 
-        // Группируем транзакции по дате
         val groupedTransactions = transactionsWithCategory.groupBy { transaction ->
             Calendar.getInstance().apply {
                 time = transaction.transaction.date
@@ -80,13 +79,13 @@ class HomeViewModel(application: Application) : AndroidViewModel(application) {
             }.time
         }
 
-        // Создаем список элементов с заголовками и транзакциями
+
         val items = mutableListOf<TransactionListItem>()
         
         groupedTransactions.entries
             .sortedByDescending { it.key }
             .forEach { (date, transactionsForDate) ->
-                // Считаем общие суммы для дня
+
                 val totalIncome = transactionsForDate
                     .filter { it.transaction.type == TransactionType.INCOME }
                     .sumOf { it.transaction.amount }
@@ -94,10 +93,10 @@ class HomeViewModel(application: Application) : AndroidViewModel(application) {
                     .filter { it.transaction.type == TransactionType.EXPENSE }
                     .sumOf { it.transaction.amount }
 
-                // Добавляем заголовок дня
+
                 items.add(TransactionListItem.DateHeader(date, totalIncome, totalExpense))
 
-                // Добавляем транзакции за день
+
                 transactionsForDate
                     .sortedByDescending { it.transaction.date }
                     .forEach { transaction ->

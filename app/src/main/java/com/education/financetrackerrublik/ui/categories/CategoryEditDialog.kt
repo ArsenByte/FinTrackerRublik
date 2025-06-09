@@ -2,6 +2,7 @@ package com.education.financetrackerrublik.ui.categories
 
 import android.content.Context
 import android.view.LayoutInflater
+import androidx.recyclerview.widget.GridLayoutManager
 import com.education.financetrackerrublik.R
 import com.education.financetrackerrublik.data.model.Category
 import com.education.financetrackerrublik.databinding.DialogEditCategoryBinding
@@ -47,7 +48,11 @@ class CategoryEditDialog(
         }
 
         // Настраиваем сетку иконок
-        val adapter = IconGridAdapter(availableIcons) { iconResId ->
+        binding.iconGrid.layoutManager = GridLayoutManager(context, 4)
+        val adapter = IconGridAdapter(
+            icons = availableIcons,
+            initialIconResId = selectedIconResId
+        ) { iconResId ->
             selectedIconResId = iconResId
         }
         binding.iconGrid.adapter = adapter

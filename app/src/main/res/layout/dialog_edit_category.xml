@@ -1,7 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    android:layout_width="match_parent"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="320dp"
     android:layout_height="wrap_content"
     android:orientation="vertical"
     android:padding="16dp">
@@ -32,10 +33,16 @@
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/icon_grid"
         android:layout_width="match_parent"
-        android:layout_height="200dp"
+        android:layout_height="wrap_content"
         android:clipToPadding="false"
-        android:padding="4dp"
+        android:nestedScrollingEnabled="false"
+        android:overScrollMode="never"
+        android:paddingStart="4dp"
+        android:paddingEnd="4dp"
+        android:paddingBottom="8dp"
         app:layoutManager="androidx.recyclerview.widget.GridLayoutManager"
-        app:spanCount="4" />
+        app:spanCount="4"
+        tools:itemCount="16"
+        tools:listitem="@layout/item_category_icon" />
 
 </LinearLayout> 

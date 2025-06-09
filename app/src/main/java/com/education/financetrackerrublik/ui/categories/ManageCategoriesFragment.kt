@@ -107,17 +107,15 @@ class ManageCategoriesFragment : Fragment() {
 
     private fun showDeleteCategoryDialog(category: Category) {
         viewModel.checkCanDeleteCategory(category)
-        viewModel.canDelete.observe(viewLifecycleOwner) { canDelete ->
-            if (canDelete) {
-                MaterialAlertDialogBuilder(requireContext())
-                    .setTitle("Удаление категории")
-                    .setMessage("Вы действительно хотите удалить категорию ${category.name}?")
-                    .setPositiveButton("Удалить") { _, _ ->
-                        viewModel.deleteCategory(category)
-                    }
-                    .setNegativeButton("Отмена", null)
-                    .show()
-            }
+        if (viewModel.canDelete.value == true) {
+            MaterialAlertDialogBuilder(requireContext())
+                .setTitle("Удаление категории")
+                .setMessage("Вы действительно хотите удалить категорию ${category.name}?")
+                .setPositiveButton("Удалить") { _, _ ->
+                    viewModel.deleteCategory(category)
+                }
+                .setNegativeButton("Отмена", null)
+                .show()
         }
     }
 

@@ -22,21 +22,24 @@ class StatisticsViewModel(application: Application) : AndroidViewModel(applicati
     private val transactionDao = database.transactionDao()
     private val categoryDao = database.categoryDao()
 
+    // Стандартные цвета для графиков/категорий
+    private val colors = listOf(
+        Color.parseColor("#FF6384"), // розовый
+        Color.parseColor("#36A2EB"), // голубой
+        Color.parseColor("#FFCE56"), // желтый
+        Color.parseColor("#4BC0C0"), // бирюзовый
+        Color.parseColor("#9966FF"), // фиолетовый
+        Color.parseColor("#FF9F40"), // оранжевый
+        Color.parseColor("#C9CBCF"), // серый
+        Color.parseColor("#8BC34A"), // зеленый
+        Color.parseColor("#E91E63"), // ярко-розовый
+        Color.parseColor("#03A9F4")  // синий
+    )
+
     private val _statistics = MutableLiveData<List<CategoryStatistics>>()
     val statistics: LiveData<List<CategoryStatistics>> = _statistics
 
-    private val colors = listOf(
-        Color.rgb(244, 67, 54),   // Red
-        Color.rgb(156, 39, 176),  // Purple
-        Color.rgb(33, 150, 243),  // Blue
-        Color.rgb(76, 175, 80),   // Green
-        Color.rgb(255, 152, 0),   // Orange
-        Color.rgb(121, 85, 72),   // Brown
-        Color.rgb(63, 81, 181),   // Indigo
-        Color.rgb(0, 150, 136),   // Teal
-        Color.rgb(255, 87, 34),   // Deep Orange
-        Color.rgb(96, 125, 139)   // Blue Grey
-    )
+
 
     fun loadStatistics(type: TransactionType, period: Int) {
         viewModelScope.launch(Dispatchers.IO) {
@@ -47,6 +50,16 @@ class StatisticsViewModel(application: Application) : AndroidViewModel(applicati
                 transactionDao.getAllTransactions().first()
             }
 
+            val filteredTransactions = transactions.filter { it.type == type }
+            val categories = categoryDao.getCategoriesByType(type)
+            
+            calculateStatistics(categories, filteredTransactions)
+        }
+    }
+
+    fun loadStatisticsForCustomPeriod(type: TransactionType, startDate: Date, endDate: Date) {
+        viewModelScope.launch(Dispatchers.IO) {
+            val transactions = transactionDao.getTransactionsByDateRange(startDate, endDate)
             val filteredTransactions = transactions.filter { it.type == type }
             val categories = categoryDao.getCategoriesByType(type)
             

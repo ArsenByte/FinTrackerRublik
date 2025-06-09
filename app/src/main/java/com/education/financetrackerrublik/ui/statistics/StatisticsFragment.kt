@@ -15,6 +15,9 @@ import com.github.mikephil.charting.data.PieDataSet
 import com.github.mikephil.charting.data.PieEntry
 import com.google.android.material.tabs.TabLayout
 import androidx.core.graphics.toColorInt
+import com.google.android.material.datepicker.MaterialDatePicker
+import java.util.Calendar
+import java.util.TimeZone
 
 class StatisticsFragment : Fragment() {
     private var _binding: FragmentStatisticsBinding? = null
@@ -23,7 +26,7 @@ class StatisticsFragment : Fragment() {
     private val viewModel: StatisticsViewModel by viewModels()
     private val adapter = CategoryStatisticsAdapter()
     private var currentType = TransactionType.EXPENSE
-    private var currentPeriod = 1 // По умолчанию - месяц
+    private var currentPeriod = 1
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -66,13 +69,45 @@ class StatisticsFragment : Fragment() {
         }
         binding.periodSpinner.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
             override fun onItemSelected(parent: AdapterView<*>?, view: View?, position: Int, id: Long) {
-                currentPeriod = position
-                viewModel.loadStatistics(currentType, currentPeriod)
+                if (position == 4) { // Произвольный период
+                    showDateRangePicker()
+                } else {
+                    currentPeriod = position
+                    viewModel.loadStatistics(currentType, currentPeriod)
+                }
             }
             override fun onNothingSelected(parent: AdapterView<*>?) {}
         }
 
         setupPieChart()
+    }
+
+    private fun showDateRangePicker() {
+        val dateRangePicker = MaterialDatePicker.Builder.dateRangePicker()
+            .setTitleText("Выберите период")
+            .build()
+
+        dateRangePicker.addOnPositiveButtonClickListener { selection ->
+            val startDate = Calendar.getInstance(TimeZone.getTimeZone("UTC")).apply {
+                timeInMillis = selection.first
+                set(Calendar.HOUR_OF_DAY, 0)
+                set(Calendar.MINUTE, 0)
+                set(Calendar.SECOND, 0)
+                set(Calendar.MILLISECOND, 0)
+            }
+
+            val endDate = Calendar.getInstance(TimeZone.getTimeZone("UTC")).apply {
+                timeInMillis = selection.second
+                set(Calendar.HOUR_OF_DAY, 23)
+                set(Calendar.MINUTE, 59)
+                set(Calendar.SECOND, 59)
+                set(Calendar.MILLISECOND, 999)
+            }
+
+            viewModel.loadStatisticsForCustomPeriod(currentType, startDate.time, endDate.time)
+        }
+
+        dateRangePicker.show(parentFragmentManager, "date_range_picker")
     }
 
     private fun setupPieChart() {
@@ -124,9 +159,9 @@ class StatisticsFragment : Fragment() {
             valueTextColor = android.graphics.Color.WHITE
             valueFormatter = PercentFormatter()
             setDrawValues(true)
-            valueLinePart1Length = 0f  // Убираем линии
+            valueLinePart1Length = 0f
             valueLinePart2Length = 0f
-            yValuePosition = PieDataSet.ValuePosition.INSIDE_SLICE  // Проценты внутри секторов
+            yValuePosition = PieDataSet.ValuePosition.INSIDE_SLICE
         }
 
         binding.pieChart.data = PieData(dataSet)

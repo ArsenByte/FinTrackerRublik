@@ -10,6 +10,9 @@ data class Category(
     val name: String,
     val type: TransactionType,
     val iconResId: Int
-) {
+)
+
+
+{
     override fun toString(): String = name
 } 
